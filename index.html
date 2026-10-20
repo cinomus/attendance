@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Посещаемость</title>
+<meta name="theme-color" content="#2563eb">
+<meta name="apple-mobile-web-app-title" content="Посещаемость">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--tx:#1c1c1e;--mut:#6b7280;--ln:#e5e7eb;--ok:#16a34a;--ab:#d97706;--ac:#2563eb;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111214;--card:#1c1d20;--tx:#f2f2f3;--mut:#9ca3af;--ln:#2e3035;--ok:#4ade80;--ab:#fbbf24;--ac:#60a5fa}}
+:root[data-theme="dark"]{--bg:#111214;--card:#1c1d20;--tx:#f2f2f3;--mut:#9ca3af;--ln:#2e3035;--ok:#4ade80;--ab:#fbbf24;--ac:#60a5fa}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:var(--bg);color:var(--tx);font:16px/1.4 -apple-system,system-ui,"Segoe UI",Roboto,sans-serif;padding:12px;max-width:640px;margin:0 auto}
+.bar{display:flex;gap:8px;margin-bottom:10px}
+select,input{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:10px;min-width:0}
+select{flex:1}input[type=date]{flex:1}
+button{font:inherit;border:0;border-radius:10px;padding:10px 14px;background:var(--ac);color:#fff;touch-action:manipulation}
+button.g{background:var(--card);color:var(--mut);border:1px solid var(--ln)}
+.sum{display:flex;gap:14px;font-size:14px;color:var(--mut);margin:4px 2px 10px}
+.sum b{color:var(--tx)}
+table{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;overflow:hidden}
+th{text-align:left;font-size:13px;color:var(--mut);padding:10px 12px;border-bottom:1px solid var(--ln)}
+td{padding:0;border-bottom:1px solid var(--ln)}
+tr:last-child td{border-bottom:0}
+td.n{padding:12px}
+td.s{width:46%;text-align:center;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation;font-weight:600}
+td.s.p{color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,transparent)}
+td.s.a{color:var(--ab);background:color-mix(in srgb,var(--ab) 16%,transparent)}
+td.x{width:74px;text-align:center;color:var(--mut);cursor:pointer;touch-action:manipulation}td.x.c{color:#dc2626;font-weight:600;font-size:13px}
+.add{display:flex;gap:8px;margin-top:10px}.add input{flex:1}
+.hint{font-size:13px;color:var(--mut);margin:12px 2px}
+.empty{padding:18px;text-align:center;color:var(--mut)}
+details{margin-top:14px;font-size:14px;color:var(--mut)}
+details .add{margin-top:8px}
+.cr{display:flex;align-items:center;gap:8px;padding:8px 10px;margin-top:8px;border:1px solid var(--ln);border-radius:10px;background:var(--card)}
+.cr.on{border-color:var(--ac)}
+.cn{flex:1;color:var(--tx);cursor:pointer;font-weight:600}.cn i{font-weight:400;color:var(--mut);font-style:normal;font-size:13px;margin-left:6px}
+.cd{padding:6px 10px;font-size:14px}.cd.c{background:#dc2626;color:#fff;border-color:#dc2626}
+</style>
+</head>
+<body>
+<div class="bar">
+  <select id="cls"></select>
+  <input type="date" id="date">
+</div>
+<div class="sum" id="sum"></div>
+<table>
+  <thead><tr><th>Ученик</th><th style="text-align:center">Отметка</th><th></th></tr></thead>
+  <tbody id="rows"></tbody>
+</table>
+<div class="add"><input id="newst" placeholder="Новый ученик" autocomplete="off"><button id="addst">Добавить</button></div>
+<div class="hint">Одно нажатие — приехал(а). Двойное — оповестили об отсутствии. Нажатие на отмеченного — сброс. Выберите дату, чтобы посмотреть отметки за этот день.</div>
+<details>
+  <summary>Классы</summary>
+  <div id="clslist"></div>
+  <div class="add"><input id="newcls" placeholder="Новый класс, например 5А" autocomplete="off"><button id="addcls">Создать</button></div>
+</details>
+<details>
+  <summary>Резервная копия</summary>
+  <div class="add">
+    <button class="g" id="bksave" style="flex:1">Сохранить в файл</button>
+    <label class="g" style="flex:1;text-align:center;border:1px solid var(--ln);border-radius:10px;padding:10px 14px;background:var(--card);color:var(--mut)">Загрузить из файла<input type="file" id="bkload" hidden></label>
+  </div>
+  <div id="bkm" style="margin-top:8px"></div>
+</details>
+<script>
+var KEY="attendance_v1",S={classes:{},marks:{}};
+try{var raw=localStorage.getItem(KEY);if(raw)S=JSON.parse(raw)}catch(e){}
+if(!S.classes)S.classes={};if(!S.marks)S.marks={};
+var cur=S.last||"";
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function today(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+var $=function(i){return document.getElementById(i)};
+$("date").value=today();
+function mk(){return cur+"|"+$("date").value}
+function drawClasses(){
+  var names=Object.keys(S.classes);
+  if(!names.length){S.classes["Мой класс"]=[];names=["Мой класс"];save()}
+  if(!S.classes[cur])cur=names[0];
+  $("cls").innerHTML=names.map(function(n){return '<option>'+esc(n)+'</option>'}).join("");
+  $("cls").value=cur;S.last=cur;save();
+}
+function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function draw(){
+  drawClsList();
+  var list=S.classes[cur]||[],m=S.marks[mk()]||{},p=0,a=0;
+  $("rows").innerHTML=list.length?list.map(function(n,i){
+    var v=m[n];if(v==1)p++;if(v==2)a++;
+    return '<tr><td class="n">'+esc(n)+'</td><td class="s '+(v==1?'p':v==2?'a':'')+'" data-i="'+i+'">'+(v==1?'✓ приехал(а)':v==2?'● оповестили':'')+'</td><td class="x'+(pend===String(i)?' c':'')+'" data-d="'+i+'">'+(pend===String(i)?'Удалить?':'✕')+'</td></tr>';
+  }).join(""):'<tr><td class="empty" colspan="3">Добавьте учеников ниже</td></tr>';
+  $("sum").innerHTML='<span>Приехали: <b>'+p+'</b></span><span>Оповестили: <b>'+a+'</b></span><span>Нет отметки: <b>'+(list.length-p-a)+'</b></span>';
+}
+function setMark(name,v){
+  var k=mk();S.marks[k]=S.marks[k]||{};
+  if(v==0)delete S.marks[k][name];else S.marks[k][name]=v;
+  save();draw();
+}
+var timer=null,tapI=null,pend=null;
+$("rows").addEventListener("click",function(e){
+  var d=e.target.getAttribute("data-d");
+  if(d!==null){if(pend===d){S.classes[cur].splice(+d,1);pend=null;save();draw()}else{pend=d;draw();setTimeout(function(){if(pend===d){pend=null;draw()}},3000)}return}pend=null;
+  var i=e.target.getAttribute("data-i");if(i===null)return;
+  var name=S.classes[cur][+i];
+  if(timer&&tapI===i){clearTimeout(timer);timer=null;setMark(name,2);return}
+  if(timer){clearTimeout(timer);timer=null}
+  tapI=i;
+  timer=setTimeout(function(){
+    timer=null;var m=S.marks[mk()]||{};
+    setMark(name,m[name]?0:1);
+  },260);
+});
+$("cls").onchange=function(){cur=this.value;S.last=cur;save();draw()};
+$("date").onchange=draw;
+function addSt(){
+  var v=$("newst").value.trim();if(!v)return;
+  var l=S.classes[cur];if(l.indexOf(v)<0)l.push(v);
+  $("newst").value="";save();draw();
+}
+$("addst").onclick=addSt;
+$("newst").onkeydown=function(e){if(e.key==="Enter")addSt()};
+$("addcls").onclick=function(){
+  var v=$("newcls").value.trim();if(!v)return;
+  if(!S.classes[v])S.classes[v]=[];
+  cur=v;$("newcls").value="";save();drawClasses();draw();
+};
+var pendC=null;
+function drawClsList(){
+  $("clslist").innerHTML=Object.keys(S.classes).map(function(n){
+    var c=S.classes[n].length,on=n===cur,p=pendC===n;
+    return '<div class="cr'+(on?' on':'')+'" data-n="'+esc(n)+'"><span class="cn">'+esc(n)+' <i>'+c+' уч.</i></span><button class="g cd'+(p?' c':'')+'" data-x="1">'+(p?'Удалить «'+esc(n)+'»?':'Удалить')+'</button></div>';
+  }).join("");
+}
+$("clslist").addEventListener("click",function(e){
+  var row=e.target.closest(".cr");if(!row)return;
+  var n=row.getAttribute("data-n");
+  if(e.target.getAttribute("data-x")){
+    if(pendC===n){
+      delete S.classes[n];
+      Object.keys(S.marks).forEach(function(k){if(k.indexOf(n+"|")===0)delete S.marks[k]});
+      pendC=null;if(cur===n)cur="";save();drawClasses();draw();
+    }else{
+      pendC=n;drawClsList();
+      setTimeout(function(){if(pendC===n){pendC=null;drawClsList()}},3000);
+    }
+    return;
+  }
+  pendC=null;cur=n;drawClasses();draw();
+});
+function msg(t){$("bkm").textContent=t}
+$("bksave").onclick=async function(){
+  var name="poseshchaemost-"+today()+".json";
+  var text=JSON.stringify({v:1,classes:S.classes,marks:S.marks});
+  try{
+    var file=new File([text],name,{type:"application/json"});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      await navigator.share({files:[file],title:name});msg("Файл отправлен");return;
+    }
+  }catch(e){if(e&&e.name==="AbortError"){msg("Отменено");return}}
+  try{
+    var a=document.createElement("a");
+    a.href=URL.createObjectURL(new Blob([text],{type:"application/json"}));
+    a.download=name;document.body.appendChild(a);a.click();
+    setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1000);
+    msg("Файл сохранён (проверьте загрузки)");
+  }catch(e){msg("Не удалось сохранить")}
+};
+$("bkload").onchange=function(){
+  var inp=this,f=inp.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(){
+    try{var d=JSON.parse(r.result);if(!d.classes||typeof d.classes!=="object")throw 0;
+      var added=0;Object.keys(d.classes).forEach(function(c){var l=Array.isArray(d.classes[c])?d.classes[c]:[];if(!S.classes[c]){S.classes[c]=[];added++}l.forEach(function(n){if(S.classes[c].indexOf(n)<0)S.classes[c].push(n)})});var dm=d.marks||{};Object.keys(dm).forEach(function(k){var t=S.marks[k]=S.marks[k]||{};Object.keys(dm[k]).forEach(function(n){if(!(n in t))t[n]=dm[k][n]})});save();drawClasses();draw();msg("Данные добавлены из файла. Новых классов: "+added)}
+    catch(e){msg("Файл не подходит")}
+    inp.value="";
+  };
+  r.readAsText(f);
+};
+drawClasses();draw();
+if("serviceWorker"in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
+</script>
+</body>
+</html>
