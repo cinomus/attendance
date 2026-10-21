@@ -56,6 +56,7 @@ details .add{margin-top:8px}
 </table>
 <div class="add"><input id="newst" placeholder="Новый ученик" autocomplete="off"><button id="addst">Добавить</button></div>
 <div class="hint">Одно нажатие — приехал(а). Двойное — оповестили об отсутствии. Нажатие на отмеченного — сброс. Выберите дату, чтобы посмотреть отметки за этот день.</div>
+<div class="hint" id="off"></div>
 <details>
   <summary>Классы</summary>
   <div id="clslist"></div>
@@ -182,7 +183,16 @@ $("bkload").onchange=function(){
   r.readAsText(f);
 };
 drawClasses();draw();
-if("serviceWorker"in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}
+function offStatus(t,ok){var o=$("off");o.textContent=t;o.style.color=ok?"var(--ok)":"var(--mut)"}
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("sw.js").then(function(){return navigator.serviceWorker.ready}).then(function(){
+    setTimeout(function(){
+      caches.match("index.html",{ignoreSearch:true}).then(function(r){
+        offStatus(r?"Офлайн-режим: готов ✓":"Офлайн-режим: не готов. Откройте приложение при включённом интернете",!!r);
+      });
+    },1500);
+  }).catch(function(){offStatus("Офлайн-режим недоступен в этом браузере",false)});
+}else offStatus("Офлайн-режим недоступен в этом браузере",false);
 try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
 </script>
 </body>

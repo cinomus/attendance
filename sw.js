@@ -1,7 +1,9 @@
-var C="attendance-v1";
+var C="attendance-v2";
 var FILES=["./","./index.html","./manifest.webmanifest","./icon-192.png","./icon-512.png"];
 self.addEventListener("install",function(e){
-  e.waitUntil(caches.open(C).then(function(c){return c.addAll(FILES)}));
+  e.waitUntil(caches.open(C).then(function(c){
+    return Promise.all(FILES.map(function(f){return c.add(f).catch(function(){})}));
+  }));
   self.skipWaiting();
 });
 self.addEventListener("activate",function(e){
@@ -12,13 +14,12 @@ self.addEventListener("activate",function(e){
 });
 self.addEventListener("fetch",function(e){
   if(e.request.method!=="GET")return;
-  e.respondWith(
-    fetch(e.request).then(function(r){
-      var copy=r.clone();
-      caches.open(C).then(function(c){c.put(e.request,copy)});
+  e.respondWith(caches.match(e.request,{ignoreSearch:true}).then(function(hit){
+    var net=fetch(e.request).then(function(r){
+      if(r&&r.ok){var cp=r.clone();caches.open(C).then(function(c){c.put(e.request,cp)})}
       return r;
-    }).catch(function(){
-      return caches.match(e.request,{ignoreSearch:true}).then(function(r){return r||caches.match("./index.html")});
-    })
-  );
+    }).catch(function(){return hit||caches.match("./index.html")});
+    e.waitUntil(net.catch(function(){}));
+    return hit||net;
+  }));
 });
