@@ -42,13 +42,27 @@ details .add{margin-top:8px}
 .cr.on{border-color:var(--ac)}
 .cn{flex:1;color:var(--tx);cursor:pointer;font-weight:600}.cn i{font-weight:400;color:var(--mut);font-style:normal;font-size:13px;margin-left:6px}
 .cd{padding:6px 10px;font-size:14px}.cd.c{background:#dc2626;color:#fff;border-color:#dc2626}
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+.ttl{flex:none;font-weight:700;font-size:18px;margin:2px 0 0;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+.side{flex:1;min-width:0;max-width:68%;min-height:44px;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-start;text-align:right;margin:0;padding:2px 0 4px;background:transparent;color:inherit;border-radius:0;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+.ver{font-size:13px;font-weight:500;color:var(--mut);margin:0}
+.ph{font-size:14px;padding:9px 12px;margin-bottom:10px;border-radius:10px;background:color-mix(in srgb,var(--ac) 12%,transparent);cursor:pointer}
+.ph[hidden]{display:none}
+#sum{user-select:none;-webkit-user-select:none;touch-action:manipulation}
+#off{max-width:100%;min-height:1.3em;font-size:12px;line-height:1.35;margin:0 0 1px;text-align:right}
+.ov{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.45);animation:fi .35s}
+.ovc{max-width:420px;background:var(--card);color:var(--tx);padding:22px 16px;border-radius:16px;text-align:center;font-size:17px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+.ovc small{display:block;margin-top:8px;font-size:13px;line-height:1.35;font-weight:400;white-space:nowrap}
+@keyframes fi{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
+<div class="top"><div class="ttl" id="ttl">Посещаемость</div><button type="button" class="side"><div id="off"></div><div class="ver">версия 17</div></button></div>
 <div class="bar">
   <select id="cls"></select>
   <input type="date" id="date">
 </div>
+<div class="ph" id="ph" hidden></div>
 <div class="sum" id="sum"></div>
 <table>
   <thead><tr><th>Ученик</th><th style="text-align:center">Отметка</th><th></th></tr></thead>
@@ -56,7 +70,6 @@ details .add{margin-top:8px}
 </table>
 <div class="add"><input id="newst" placeholder="Новый ученик" autocomplete="off"><button id="addst">Добавить</button></div>
 <div class="hint">Одно нажатие — приехал(а). Двойное — оповестили об отсутствии. Нажатие на отмеченного — сброс. Выберите дату, чтобы посмотреть отметки за этот день.</div>
-<div class="hint" id="off"></div>
 <details>
   <summary>Классы</summary>
   <div id="clslist"></div>
@@ -118,8 +131,9 @@ $("rows").addEventListener("click",function(e){
 });
 $("cls").onchange=function(){cur=this.value;S.last=cur;save();draw()};
 $("date").onchange=draw;
+function normName(s){return String(s).replace(/\u00A0/g," ").replace(/[\u200B\uFEFF]/g,"").replace(/[.!?…]+$/g,"").trim().toLowerCase()}
 function addSt(){
-  var v=$("newst").value.trim();if(!v)return;
+  var v=$("newst").value.trim();if(!v)return;var cw=null;Object.keys(LOVE.codes).forEach(function(k){if(normName(k)===normName(v))cw=LOVE.codes[k]});if(cw){$("newst").value="";overlay(cw);return}
   var l=S.classes[cur];if(l.indexOf(v)<0)l.push(v);
   $("newst").value="";save();draw();
 }
@@ -182,9 +196,81 @@ $("bkload").onchange=function(){
   };
   r.readAsText(f);
 };
+/* ===== Тёплые сюрпризы: тексты можно менять здесь ===== */
+var LOVE={
+  sign:"Сделано с заботой 💛",
+  secret:"Ты делаешь очень важное дело, и это не остаётся незамеченным 💛",
+  codes:{"секрет":"Ты замечательная 💛"},
+  dates:{},
+  fri:["Пятница! Неделя была длинной, а ты её выдержала 🎉","Ещё один тяжёлый кусок позади. Ты справилась 💪","Пятница. Отдых сегодня точно заслужен ☕️"],
+  eve:["Рабочий день закончился. Можно отпустить этот день 🌙","На сегодня достаточно. Ты сделала много 💛","Хорошего вечера. Пусть он будет только твоим ✨"],
+  day:["Ты сегодня уже сделала больше, чем замечаешь сама 💛","Столько дел, и ты всё равно замечаешь каждого 🌷","Даже обычный день с тобой становится теплее ☀️","Рядом с тобой сразу спокойнее ☺️","Тобой легко восхищаться, даже после долгого дня ✨","Пусть сегодня кто-нибудь позаботится и о тебе 🤗","Такая работа выматывает. Ты с ней справляешься прекрасно 💪","Можно выдохнуть. Ты и так уже молодец 🌿","От тебя хочется улыбаться. Само как-то получается 😊","О тебе думают с теплом. Прямо сейчас 💛","Иногда секрет прячется среди новых учеников 🤫"],
+  nag:["Всё уже готово. Не нажимай ещё раз","Серьёзно: ещё одно нажатие ни к чему","Лучше остановись и больше не нажимай","Последний раз прошу — не нажимай"],
+  prize:"Ты выиграла Kinder Bueno 🍫",
+  prizeNote:"(к кому обратиться за наградой ты знаешь ☺️)"
+};
+function overlay(t,stay,sub){
+  var o=document.createElement("div");o.className="ov";
+  o.innerHTML='<div class="ovc">'+esc(t)+(sub?'<small>'+esc(sub)+'</small>':'')+'</div>';
+  o.onclick=function(){o.remove()};
+  document.body.appendChild(o);
+  if(!stay)setTimeout(function(){o.remove()},9000);
+}
+var tp=[];
+$("sum").addEventListener("click",function(){
+  var n=Date.now();tp=tp.filter(function(t){return n-t<2000});tp.push(n);
+  if(tp.length>=5){tp=[];overlay(LOVE.secret)}
+});
+var lp=null;
+["touchstart","mousedown"].forEach(function(ev){$("ttl").addEventListener(ev,function(){
+  clearTimeout(lp);lp=setTimeout(function(){
+    var notes=[LOVE.sign].concat(LOVE.day);
+    overlay(notes[Math.floor(Math.random()*notes.length)]);
+  },700);
+})});
+["touchend","touchcancel","touchmove","mouseup","mouseleave"].forEach(function(ev){$("ttl").addEventListener(ev,function(){clearTimeout(lp)})});
+function dailyPhrase(){
+  var d=new Date(),k=today();
+  if(S.ph===k)return;
+  var t=LOVE.dates[k.slice(5)];
+  if(!t){
+    var pool=LOVE.day.slice();
+    if(d.getDay()===5)pool=LOVE.fri.concat(pool);
+    else if(d.getHours()>=19)pool=LOVE.eve.concat(pool);
+    if(pool.length)t=pool[Math.floor(d.getTime()/864e5)%pool.length];
+  }
+  if(!t)return;
+  var el=$("ph");el.textContent=t;el.hidden=false;
+  el.onclick=function(){el.hidden=true;S.ph=k;save()};
+}
+dailyPhrase();
 drawClasses();draw();
-function offStatus(t,ok){var o=$("off");o.textContent=t;o.style.color=ok?"var(--ok)":"var(--mut)"}
+var offBase="",offOk=false,offStep=0,offLock=false;
+function offStatus(t,ok){
+  offBase=t;offOk=!!ok;
+  if(offLock)return;
+  var o=$("off");
+  o.textContent=t;
+  o.style.color=ok?"var(--ok)":"var(--mut)";
+  document.querySelector(".side").style.cursor=(ok&&!S.kb)?"pointer":"default";
+}
+document.querySelector(".side").onclick=function(){
+  if(S.kb||!offOk)return;
+  var o=$("off");
+  if(offStep<4){
+    offLock=true;
+    o.textContent=LOVE.nag[offStep];
+    o.style.color="var(--ab)";
+    offStep++;
+    return;
+  }
+  S.kb=1;save();
+  offLock=false;offStatus(offBase,offOk);
+  overlay(LOVE.prize,true,LOVE.prizeNote);
+};
 if("serviceWorker"in navigator){
+  var had=!!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener("controllerchange",function(){if(had){had=false;location.reload()}});
   navigator.serviceWorker.register("sw.js").then(function(){return navigator.serviceWorker.ready}).then(function(){
     setTimeout(function(){
       caches.match("index.html",{ignoreSearch:true}).then(function(r){
