@@ -43,7 +43,9 @@ details .add{margin-top:8px}
 .cn{flex:1;color:var(--tx);cursor:pointer;font-weight:600}.cn i{font-weight:400;color:var(--mut);font-style:normal;font-size:13px;margin-left:6px}
 .cd{padding:6px 10px;font-size:14px}.cd.c{background:#dc2626;color:#fff;border-color:#dc2626}
 .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+.brand{min-width:0;flex:1}
 .ttl{flex:none;font-weight:700;font-size:18px;margin:2px 0 0;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+.found{font-size:12px;line-height:1.2;font-weight:500;color:var(--mut);margin:1px 0 0}
 .side{flex:1;min-width:0;max-width:68%;min-height:44px;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-start;text-align:right;margin:0;padding:2px 0 4px;background:transparent;color:inherit;border-radius:0;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
 .ver{font-size:13px;font-weight:500;color:var(--mut);margin:0}
 .ph{font-size:14px;padding:9px 12px;margin-bottom:10px;border-radius:10px;background:color-mix(in srgb,var(--ac) 12%,transparent);cursor:pointer}
@@ -57,7 +59,7 @@ details .add{margin-top:8px}
 </style>
 </head>
 <body>
-<div class="top"><div class="ttl" id="ttl">Посещаемость</div><button type="button" class="side"><div id="off"></div><div class="ver">версия 17</div></button></div>
+<div class="top"><div class="brand"><div class="ttl" id="ttl">Посещаемость</div><div class="found" id="found"></div></div><button type="button" class="side"><div id="off"></div><div class="ver">версия 21</div></button></div>
 <div class="bar">
   <select id="cls"></select>
   <input type="date" id="date">
@@ -133,7 +135,7 @@ $("cls").onchange=function(){cur=this.value;S.last=cur;save();draw()};
 $("date").onchange=draw;
 function normName(s){return String(s).replace(/\u00A0/g," ").replace(/[\u200B\uFEFF]/g,"").replace(/[.!?…]+$/g,"").trim().toLowerCase()}
 function addSt(){
-  var v=$("newst").value.trim();if(!v)return;var cw=null;Object.keys(LOVE.codes).forEach(function(k){if(normName(k)===normName(v))cw=LOVE.codes[k]});if(cw){$("newst").value="";overlay(cw);return}
+  var v=$("newst").value.trim();if(!v)return;var cw=null;Object.keys(LOVE.codes).forEach(function(k){if(normName(k)===normName(v))cw=LOVE.codes[k]});if(cw){$("newst").value="";overlay(cw);markFound("code");return}
   var l=S.classes[cur];if(l.indexOf(v)<0)l.push(v);
   $("newst").value="";save();draw();
 }
@@ -209,6 +211,9 @@ var LOVE={
   prize:"Ты выиграла Kinder Bueno 🍫",
   prizeNote:"(к кому обратиться за наградой ты знаешь ☺️)"
 };
+function foundN(){var f=S.found||{};return (f.ttl?1:0)+(f.sum?1:0)+(f.code?1:0)+((f.off||S.kb)?1:0)}
+function drawFound(){var el=$("found");if(el)el.textContent="Секретики: "+foundN()+" из 4"}
+function markFound(k){S.found=S.found||{};if(S.found[k])return;S.found[k]=1;save();drawFound()}
 function overlay(t,stay,sub){
   var o=document.createElement("div");o.className="ov";
   o.innerHTML='<div class="ovc">'+esc(t)+(sub?'<small>'+esc(sub)+'</small>':'')+'</div>';
@@ -219,13 +224,14 @@ function overlay(t,stay,sub){
 var tp=[];
 $("sum").addEventListener("click",function(){
   var n=Date.now();tp=tp.filter(function(t){return n-t<2000});tp.push(n);
-  if(tp.length>=5){tp=[];overlay(LOVE.secret)}
+  if(tp.length>=5){tp=[];overlay(LOVE.secret);markFound("sum")}
 });
 var lp=null;
 ["touchstart","mousedown"].forEach(function(ev){$("ttl").addEventListener(ev,function(){
   clearTimeout(lp);lp=setTimeout(function(){
     var notes=[LOVE.sign].concat(LOVE.day);
     overlay(notes[Math.floor(Math.random()*notes.length)]);
+    markFound("ttl");
   },700);
 })});
 ["touchend","touchcancel","touchmove","mouseup","mouseleave"].forEach(function(ev){$("ttl").addEventListener(ev,function(){clearTimeout(lp)})});
@@ -264,10 +270,11 @@ document.querySelector(".side").onclick=function(){
     offStep++;
     return;
   }
-  S.kb=1;save();
+  S.kb=1;markFound("off");save();
   offLock=false;offStatus(offBase,offOk);
   overlay(LOVE.prize,true,LOVE.prizeNote);
 };
+drawFound();
 if("serviceWorker"in navigator){
   var had=!!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener("controllerchange",function(){if(had){had=false;location.reload()}});
