@@ -30,7 +30,7 @@ td{padding:0;border-bottom:1px solid var(--ln)}
 tr:last-child td{border-bottom:0}
 td.n{padding:12px}
 td.s{width:108px;padding:8px 0 8px 12px;text-align:right;vertical-align:middle;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation}
-td.s .mk{display:inline-grid;place-items:center;box-sizing:border-box;width:48px;height:36px;padding:0 0 4px;border-radius:9px;border:1px solid var(--ln);font-weight:700;font-size:18px;line-height:1;text-align:center}
+td.s .mk{display:inline-grid;place-items:center;box-sizing:border-box;width:48px;height:36px;padding:0 0 4px;border-radius:9px;border:1px solid var(--ln);font-weight:700;font-size:18px;line-height:1;text-align:center;vertical-align:middle}
 td.s.p .mk{color:#fff;background:var(--ok);border-color:transparent;padding:0 0 2px 2px}
 td.s.a .mk{color:#fff;background:var(--ab);border-color:transparent}
 th.m{width:108px;text-align:right;padding:10px 0 10px 12px;user-select:none;-webkit-user-select:none;touch-action:manipulation}
@@ -65,7 +65,7 @@ details .add{margin-top:8px}
 </style>
 </head>
 <body>
-<div class="top"><div class="brand"><div class="ttl" id="ttl">Посещаемость</div><div class="found" id="found"></div></div><button type="button" class="side"><div id="off"></div><div class="ver">версия 49</div></button></div>
+<div class="top"><div class="brand"><div class="ttl" id="ttl">Посещаемость</div><div class="found" id="found"></div></div><button type="button" class="side"><div id="off"></div><div class="ver">версия 51</div></button></div>
 <div class="bar">
   <select id="cls"></select>
   <input type="date" id="date">
@@ -113,6 +113,7 @@ function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;
 function draw(){
   drawClsList();
   var list=S.classes[cur]||[],m=S.marks[mk()]||{},p=0,a=0;
+  if(sortList(list))save();
   $("rows").innerHTML=list.length?list.map(function(n,i){
     var v=m[n];if(v==1)p++;if(v==2)a++;
     return '<tr><td class="n">'+esc(n)+'</td><td class="s '+(v==1?'p':v==2?'a':'')+'" data-i="'+i+'"><span class="mk">'+(v==1?'+':v==2?'н':'')+'</span></td><td class="x'+(pend===String(i)?' c':'')+'" data-d="'+i+'">'+(pend===String(i)?'Удалить?':'✕')+'</td></tr>';
@@ -141,6 +142,14 @@ $("rows").addEventListener("click",function(e){
 $("cls").onchange=function(){cur=this.value;S.last=cur;save();draw()};
 $("date").onchange=draw;
 function normName(s){return String(s).replace(/\u00A0/g," ").replace(/[\u200B\uFEFF]/g,"").replace(/[.!?…]+$/g,"").trim().toLowerCase()}
+function byName(a,b){return String(a).localeCompare(b,"ru",{sensitivity:"base"})}
+function sortList(list){
+  if(!list||list.length<2)return false;
+  var prev=list.slice();
+  list.sort(byName);
+  for(var i=0;i<list.length;i++)if(list[i]!==prev[i])return true;
+  return false;
+}
 function addSt(){
   var v=$("newst").value.trim();if(!v)return;var cw=null;Object.keys(LOVE.codes).forEach(function(k){if(normName(k)===normName(v))cw=LOVE.codes[k]});if(cw){$("newst").value="";var note=Array.isArray(cw)?cw[1]:null;egg("code",Array.isArray(cw)?cw[0]:cw,true,note,!!note);return}
   var l=S.classes[cur];if(l.indexOf(v)<0)l.push(v);
