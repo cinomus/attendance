@@ -29,12 +29,12 @@ th{text-align:left;font-size:13px;color:var(--mut);padding:10px 12px;border-bott
 td{padding:0;border-bottom:1px solid var(--ln)}
 tr:last-child td{border-bottom:0}
 td.n{padding:12px}
-td.s{width:108px;padding:8px 14px 8px 40px;text-align:left;vertical-align:middle;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation}
-td.s .mk{display:inline-grid;place-items:center;width:48px;height:36px;border-radius:9px;border:1px solid var(--ln);font-weight:700;font-size:18px;line-height:1;text-align:center}
-td.s.p .mk{color:#fff;background:var(--ok);border-color:transparent}
+td.s{width:108px;padding:8px 0 8px 12px;text-align:right;vertical-align:middle;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+td.s .mk{display:inline-grid;place-items:center;box-sizing:border-box;width:48px;height:36px;padding:0 0 4px;border-radius:9px;border:1px solid var(--ln);font-weight:700;font-size:18px;line-height:1;text-align:center}
+td.s.p .mk{color:#fff;background:var(--ok);border-color:transparent;padding:0 0 2px 2px}
 td.s.a .mk{color:#fff;background:var(--ab);border-color:transparent}
-th.m{width:108px;text-align:left;padding:10px 14px 10px 40px}
-td.x{width:74px;padding:0;text-align:center;color:var(--mut);cursor:pointer;touch-action:manipulation}td.x.c{color:#dc2626;font-weight:600;font-size:13px}
+th.m{width:108px;text-align:right;padding:10px 0 10px 12px}
+td.x{width:48px;padding:0;text-align:center;white-space:nowrap;color:var(--mut);cursor:pointer;touch-action:manipulation}td.x.c{width:auto;padding:0 8px;text-align:center;white-space:nowrap;color:#dc2626;font-weight:600;font-size:13px}
 .add{display:flex;gap:8px;margin-top:10px}.add input{flex:1}
 .hint{font-size:13px;color:var(--mut);margin:12px 2px}
 .empty{padding:18px;text-align:center;color:var(--mut)}
@@ -61,7 +61,7 @@ details .add{margin-top:8px}
 </style>
 </head>
 <body>
-<div class="top"><div class="brand"><div class="ttl" id="ttl">Посещаемость</div><div class="found" id="found"></div></div><button type="button" class="side"><div id="off"></div><div class="ver">версия 31</div></button></div>
+<div class="top"><div class="brand"><div class="ttl" id="ttl">Посещаемость</div><div class="found" id="found"></div></div><button type="button" class="side"><div id="off"></div><div class="ver">версия 39</div></button></div>
 <div class="bar">
   <select id="cls"></select>
   <input type="date" id="date">
