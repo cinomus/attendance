@@ -33,7 +33,7 @@ td.s{width:108px;padding:8px 0 8px 12px;text-align:right;vertical-align:middle;c
 td.s .mk{display:inline-grid;place-items:center;box-sizing:border-box;width:48px;height:36px;padding:0 0 4px;border-radius:9px;border:1px solid var(--ln);font-weight:700;font-size:18px;line-height:1;text-align:center}
 td.s.p .mk{color:#fff;background:var(--ok);border-color:transparent;padding:0 0 2px 2px}
 td.s.a .mk{color:#fff;background:var(--ab);border-color:transparent}
-th.m{width:108px;text-align:right;padding:10px 0 10px 12px}
+th.m{width:108px;text-align:right;padding:10px 0 10px 12px;user-select:none;-webkit-user-select:none;touch-action:manipulation}
 td.x{width:48px;padding:0;text-align:center;white-space:nowrap;color:var(--mut);cursor:pointer;touch-action:manipulation}td.x.c{width:auto;padding:0 8px;text-align:center;white-space:nowrap;color:#dc2626;font-weight:600;font-size:13px}
 .add{display:flex;gap:8px;margin-top:10px}.add input{flex:1}
 .hint{font-size:13px;color:var(--mut);margin:12px 2px}
@@ -47,21 +47,25 @@ details .add{margin-top:8px}
 .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
 .brand{min-width:0;flex:1}
 .ttl{flex:none;font-weight:700;font-size:18px;margin:2px 0 0;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
-.found{font-size:12px;line-height:1.2;font-weight:500;color:var(--mut);margin:1px 0 0}
+.found{font-size:12px;line-height:1.2;font-weight:500;color:var(--mut);margin:1px 0 0;user-select:none;-webkit-user-select:none;touch-action:manipulation}
 .side{flex:1;min-width:0;max-width:68%;min-height:44px;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-start;text-align:right;margin:0;padding:2px 0 4px;background:transparent;color:inherit;border-radius:0;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
 .ver{font-size:13px;font-weight:500;color:var(--mut);margin:0}
 .ph{font-size:14px;padding:9px 12px;margin-bottom:10px;border-radius:10px;background:color-mix(in srgb,var(--ac) 12%,transparent);cursor:pointer}
 .ph[hidden]{display:none}
+.ghost{margin:2px 2px 0;min-height:1.4em;font-size:13px;line-height:1.4;color:transparent;user-select:text;-webkit-user-select:text;cursor:default}
+.ghost::selection,.ghost::-moz-selection{color:var(--tx);-webkit-text-fill-color:var(--tx);background:#fde68a}
+.ghost.on{color:var(--ac);-webkit-text-fill-color:var(--ac);cursor:pointer}
 #sum{user-select:none;-webkit-user-select:none;touch-action:manipulation}
 #off{max-width:100%;min-height:1.3em;font-size:12px;line-height:1.35;margin:0 0 1px;text-align:right}
 .ov{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.45);animation:fi .35s}
 .ovc{max-width:420px;background:var(--card);color:var(--tx);padding:22px 16px;border-radius:16px;text-align:center;font-size:17px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
 .ovc small{display:block;margin-top:8px;font-size:13px;line-height:1.35;font-weight:400;white-space:nowrap}
+.ovc small.wrap{white-space:normal}
 @keyframes fi{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
-<div class="top"><div class="brand"><div class="ttl" id="ttl">Посещаемость</div><div class="found" id="found"></div></div><button type="button" class="side"><div id="off"></div><div class="ver">версия 40</div></button></div>
+<div class="top"><div class="brand"><div class="ttl" id="ttl">Посещаемость</div><div class="found" id="found"></div></div><button type="button" class="side"><div id="off"></div><div class="ver">версия 46</div></button></div>
 <div class="bar">
   <select id="cls"></select>
   <input type="date" id="date">
@@ -74,6 +78,7 @@ details .add{margin-top:8px}
 </table>
 <div class="add"><input id="newst" placeholder="Новый ученик" autocomplete="off"><button id="addst">Добавить</button></div>
 <div class="hint">Нажатие ставит +. Ещё раз — н. Нажатие на н убирает отметку. Двойное нажатие сразу ставит н. Выберите дату, чтобы посмотреть отметки за этот день.</div>
+<div class="ghost" id="ghost">ты всё-таки заглянула сюда</div>
 <details>
   <summary>Классы</summary>
   <div id="clslist"></div>
@@ -137,7 +142,7 @@ $("cls").onchange=function(){cur=this.value;S.last=cur;save();draw()};
 $("date").onchange=draw;
 function normName(s){return String(s).replace(/\u00A0/g," ").replace(/[\u200B\uFEFF]/g,"").replace(/[.!?…]+$/g,"").trim().toLowerCase()}
 function addSt(){
-  var v=$("newst").value.trim();if(!v)return;var cw=null;Object.keys(LOVE.codes).forEach(function(k){if(normName(k)===normName(v))cw=LOVE.codes[k]});if(cw){$("newst").value="";overlay(cw);markFound("code");return}
+  var v=$("newst").value.trim();if(!v)return;var cw=null;Object.keys(LOVE.codes).forEach(function(k){if(normName(k)===normName(v))cw=LOVE.codes[k]});if(cw){$("newst").value="";var note=Array.isArray(cw)?cw[1]:null;egg("code",Array.isArray(cw)?cw[0]:cw,true,note,!!note);return}
   var l=S.classes[cur];if(l.indexOf(v)<0)l.push(v);
   $("newst").value="";save();draw();
 }
@@ -204,7 +209,7 @@ $("bkload").onchange=function(){
 var LOVE={
   sign:"Сделано с заботой 💛",
   secret:"Ты делаешь очень важное дело, и это не остаётся незамеченным 💛",
-  codes:{"секрет":"Ты замечательная 💛"},
+  codes:{"секрет":["Ты замечательная 💛","Это был самый сложный секрет. Ты выиграла букет цветов и поход в ресторан 💐"]},
   dates:{},
   fri:["Пятница! Неделя была длинной, а ты её выдержала 🎉","Ещё один тяжёлый день позади. Ты справилась 💪","Пятница. Отдых сегодня точно заслужен ☕️"],
   eve:["Рабочий день закончился. Можно отпустить этот день 🌙","На сегодня достаточно. Ты сделала много 💛","Хорошего вечера. Пусть он будет только твоим ✨"],
@@ -213,12 +218,15 @@ var LOVE={
   prize:"Ты выиграла Kinder Bueno 🍫",
   prizeNote:"(к кому обратиться за наградой ты знаешь ☺️)"
 };
-function foundN(){var f=S.found||{};return (f.ttl?1:0)+(f.sum?1:0)+(f.code?1:0)+((f.off||S.kb)?1:0)}
-function drawFound(){var el=$("found");if(el)el.textContent="Секретики: "+foundN()+" из 4"}
+var EGGS=["ttl","sum","code","off","sel","swl","swp"];
+function foundN(){var f=S.found||{};return EGGS.reduce(function(n,k){return n+(k==="off"?(f.off||S.kb?1:0):(f[k]?1:0))},0)}
+function drawFound(){var el=$("found");if(el)el.textContent="Секретики: "+foundN()+" из "+EGGS.length}
 function markFound(k){S.found=S.found||{};if(S.found[k])return;S.found[k]=1;save();drawFound()}
-function overlay(t,stay,sub){
+function seenEgg(k){var f=S.found||{};return k==="off"?(f.off||S.kb):!!f[k]}
+function egg(k,t,stay,sub,wrap){if(seenEgg(k))return;overlay(t,stay,sub,wrap);markFound(k)}
+function overlay(t,stay,sub,wrap){
   var o=document.createElement("div");o.className="ov";
-  o.innerHTML='<div class="ovc">'+esc(t)+(sub?'<small>'+esc(sub)+'</small>':'')+'</div>';
+  o.innerHTML='<div class="ovc">'+esc(t)+(sub?'<small'+(wrap?' class="wrap"':'')+'>'+esc(sub)+'</small>':'')+'</div>';
   o.onclick=function(){o.remove()};
   document.body.appendChild(o);
   if(!stay)setTimeout(function(){o.remove()},9000);
@@ -226,17 +234,51 @@ function overlay(t,stay,sub){
 var tp=[];
 $("sum").addEventListener("click",function(){
   var n=Date.now();tp=tp.filter(function(t){return n-t<2000});tp.push(n);
-  if(tp.length>=5){tp=[];overlay(LOVE.secret);markFound("sum")}
+  if(tp.length>=5){tp=[];egg("sum",LOVE.secret)}
 });
 var lp=null;
 ["touchstart","mousedown"].forEach(function(ev){$("ttl").addEventListener(ev,function(){
   clearTimeout(lp);lp=setTimeout(function(){
     var notes=[LOVE.sign].concat(LOVE.day);
-    overlay(notes[Math.floor(Math.random()*notes.length)]);
-    markFound("ttl");
+    egg("ttl",notes[Math.floor(Math.random()*notes.length)]);
   },700);
 })});
 ["touchend","touchcancel","touchmove","mouseup","mouseleave"].forEach(function(ev){$("ttl").addEventListener(ev,function(){clearTimeout(lp)})});
+var tlX=0,tlY=0,tl=0;
+$("ttl").addEventListener("touchstart",function(e){
+  if(e.touches.length!==1)return;
+  tlX=e.touches[0].clientX;tlY=e.touches[0].clientY;tl=1;
+},{passive:true});
+$("ttl").addEventListener("touchend",function(e){
+  if(!tl||!e.changedTouches.length)return;
+  var t=e.changedTouches[0],dx=t.clientX-tlX,dy=t.clientY-tlY;tl=0;
+  if(dx<-72&&Math.abs(dy)<36)egg("swl","Влево тоже можно. Там светлее ✨");
+},{passive:true});
+var swX=0,swY=0,swN=null;
+$("rows").addEventListener("touchstart",function(e){
+  var n=e.target.closest&&e.target.closest("td.n");
+  if(!n||e.touches.length!==1){swN=null;return}
+  swX=e.touches[0].clientX;swY=e.touches[0].clientY;swN=n;
+},{passive:true});
+$("rows").addEventListener("touchend",function(e){
+  if(!swN||!e.changedTouches.length)return;
+  var t=e.changedTouches[0],dx=t.clientX-swX,dy=t.clientY-swY;swN=null;
+  if(dx>72&&Math.abs(dy)<36)egg("swp","Имена тоже любят, когда по ним проводят 🌷");
+},{passive:true});
+var ghost=$("ghost");
+function dropGhost(){if(!ghost)return;ghost.remove();ghost=null}
+if(S.found&&S.found.sel)dropGhost();
+document.addEventListener("selectionchange",function(){
+  if(!ghost||ghost.classList.contains("on"))return;
+  var sel=window.getSelection();
+  if(!sel||sel.isCollapsed||!sel.rangeCount)return;
+  if(ghost.contains(sel.anchorNode)||ghost.contains(sel.focusNode))ghost.classList.add("on");
+});
+if(ghost)ghost.onclick=function(){
+  if(!ghost.classList.contains("on"))return;
+  egg("sel","Вот ты и нашла то, чего не было видно 💛");
+  dropGhost();
+};
 function dailyPhrase(){
   var d=new Date(),k=today();
   if(S.ph===k)return;
@@ -272,9 +314,9 @@ document.querySelector(".side").onclick=function(){
     offStep++;
     return;
   }
-  S.kb=1;markFound("off");save();
+  egg("off",LOVE.prize,true,LOVE.prizeNote);
+  S.kb=1;save();
   offLock=false;offStatus(offBase,offOk);
-  overlay(LOVE.prize,true,LOVE.prizeNote);
 };
 drawFound();
 if("serviceWorker"in navigator){
