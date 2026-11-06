@@ -47,7 +47,7 @@ details .add{margin-top:8px}
 .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
 .brand{min-width:0;flex:1}
 .ttl{flex:none;font-weight:700;font-size:18px;margin:2px 0 0;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
-.found{font-size:12px;line-height:1.2;font-weight:500;color:var(--mut);margin:1px 0 0;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.found{font-size:12px;line-height:1.2;font-weight:500;color:var(--mut);margin:1px 0 0;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
 .side{flex:1;min-width:0;max-width:68%;min-height:44px;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-start;text-align:right;margin:0;padding:2px 0 4px;background:transparent;color:inherit;border-radius:0;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
 .ver{font-size:13px;font-weight:500;color:var(--mut);margin:0}
 .ph{font-size:14px;padding:9px 12px;margin-bottom:10px;border-radius:10px;background:color-mix(in srgb,var(--ac) 12%,transparent);cursor:pointer}
@@ -65,7 +65,7 @@ details .add{margin-top:8px}
 </style>
 </head>
 <body>
-<div class="top"><div class="brand"><div class="ttl" id="ttl">Посещаемость</div><div class="found" id="found"></div></div><button type="button" class="side"><div id="off"></div><div class="ver">версия 46</div></button></div>
+<div class="top"><div class="brand"><div class="ttl" id="ttl">Посещаемость</div><div class="found" id="found"></div></div><button type="button" class="side"><div id="off"></div><div class="ver">версия 49</div></button></div>
 <div class="bar">
   <select id="cls"></select>
   <input type="date" id="date">
@@ -252,7 +252,7 @@ $("ttl").addEventListener("touchstart",function(e){
 $("ttl").addEventListener("touchend",function(e){
   if(!tl||!e.changedTouches.length)return;
   var t=e.changedTouches[0],dx=t.clientX-tlX,dy=t.clientY-tlY;tl=0;
-  if(dx<-72&&Math.abs(dy)<36)egg("swl","Влево тоже можно. Там светлее ✨");
+  if(dx<-72&&Math.abs(dy)<36)egg("swl","Ой, а что это ты делаешь? Решила все секретики найти? 😏");
 },{passive:true});
 var swX=0,swY=0,swN=null;
 $("rows").addEventListener("touchstart",function(e){
@@ -263,22 +263,65 @@ $("rows").addEventListener("touchstart",function(e){
 $("rows").addEventListener("touchend",function(e){
   if(!swN||!e.changedTouches.length)return;
   var t=e.changedTouches[0],dx=t.clientX-swX,dy=t.clientY-swY;swN=null;
-  if(dx>72&&Math.abs(dy)<36)egg("swp","Имена тоже любят, когда по ним проводят 🌷");
+  if(dx>72&&Math.abs(dy)<36)egg("swp","Все любят, когда их гладят 🐱");
 },{passive:true});
 var ghost=$("ghost");
+function bindGhost(){
+  if(!ghost)return;
+  ghost.onclick=function(){
+    if(!ghost.classList.contains("on"))return;
+    egg("sel","Вот ты и нашла то, чего не было видно 💛");
+    dropGhost();
+  };
+}
 function dropGhost(){if(!ghost)return;ghost.remove();ghost=null}
-if(S.found&&S.found.sel)dropGhost();
+function showGhost(){
+  if(ghost)return;
+  ghost=document.createElement("div");
+  ghost.className="ghost";ghost.id="ghost";
+  ghost.textContent="ты всё-таки заглянула сюда";
+  document.querySelector(".hint").insertAdjacentElement("afterend",ghost);
+  bindGhost();
+}
+if(S.found&&S.found.sel)dropGhost();else bindGhost();
 document.addEventListener("selectionchange",function(){
   if(!ghost||ghost.classList.contains("on"))return;
   var sel=window.getSelection();
   if(!sel||sel.isCollapsed||!sel.rangeCount)return;
   if(ghost.contains(sel.anchorNode)||ghost.contains(sel.focusNode))ghost.classList.add("on");
 });
-if(ghost)ghost.onclick=function(){
-  if(!ghost.classList.contains("on"))return;
-  egg("sel","Вот ты и нашла то, чего не было видно 💛");
-  dropGhost();
-};
+var rst=null,rstX=0,rstY=0;
+function resetEggs(){
+  S.found={};S.kb=0;offStep=0;offLock=false;save();drawFound();showGhost();
+  if(offBase)offStatus(offBase,offOk);
+  overlay("Секретики сброшены");
+}
+function rstMove(e){if(rst&&(Math.abs(e.clientX-rstX)>28||Math.abs(e.clientY-rstY)>28))stopRst()}
+function rstTouch(e){if(!rst||!e.touches.length)return;var t=e.touches[0];if(Math.abs(t.clientX-rstX)>28||Math.abs(t.clientY-rstY)>28)stopRst()}
+function clearRst(){
+  document.removeEventListener("mousemove",rstMove);
+  document.removeEventListener("touchmove",rstTouch);
+  document.removeEventListener("mouseup",stopRst);
+  document.removeEventListener("touchend",stopRst);
+  document.removeEventListener("touchcancel",stopRst);
+}
+function armRst(x,y){
+  stopRst();rstX=x;rstY=y;
+  rst=setTimeout(function(){clearRst();rst=null;resetEggs()},10000);
+  document.addEventListener("mousemove",rstMove);
+  document.addEventListener("touchmove",rstTouch,{passive:true});
+  document.addEventListener("mouseup",stopRst);
+  document.addEventListener("touchend",stopRst);
+  document.addEventListener("touchcancel",stopRst);
+}
+function stopRst(){clearTimeout(rst);rst=null;clearRst()}
+$("found").addEventListener("touchstart",function(e){
+  if(e.touches.length!==1)return;
+  e.preventDefault();
+  armRst(e.touches[0].clientX,e.touches[0].clientY);
+},{passive:false});
+$("found").addEventListener("mousedown",function(e){if(e.button===0)armRst(e.clientX,e.clientY)});
+$("found").addEventListener("contextmenu",function(e){e.preventDefault()});
 function dailyPhrase(){
   var d=new Date(),k=today();
   if(S.ph===k)return;
