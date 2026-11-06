@@ -61,7 +61,7 @@ details .add{margin-top:8px}
 </style>
 </head>
 <body>
-<div class="top"><div class="brand"><div class="ttl" id="ttl">Посещаемость</div><div class="found" id="found"></div></div><button type="button" class="side"><div id="off"></div><div class="ver">версия 39</div></button></div>
+<div class="top"><div class="brand"><div class="ttl" id="ttl">Посещаемость</div><div class="found" id="found"></div></div><button type="button" class="side"><div id="off"></div><div class="ver">версия 40</div></button></div>
 <div class="bar">
   <select id="cls"></select>
   <input type="date" id="date">
@@ -129,10 +129,9 @@ $("rows").addEventListener("click",function(e){
   if(timer&&tapI===i){clearTimeout(timer);timer=null;setMark(name,2);return}
   if(timer){clearTimeout(timer);timer=null}
   tapI=i;
-  timer=setTimeout(function(){
-    timer=null;var m=S.marks[mk()]||{},v=m[name]||0;
-    setMark(name,v==1?2:v==2?0:1);
-  },260);
+  var m=S.marks[mk()]||{},v=m[name]||0;
+  setMark(name,v==1?2:v==2?0:1);
+  timer=setTimeout(function(){timer=null},280);
 });
 $("cls").onchange=function(){cur=this.value;S.last=cur;save();draw()};
 $("date").onchange=draw;
