@@ -1,4 +1,4 @@
-var C="attendance-v40";
+var C="attendance-v46";
 var FILES=["./","./index.html","./manifest.webmanifest","./icon-192.png","./icon-512.png"];
 self.addEventListener("install",function(e){
   e.waitUntil(caches.open(C).then(function(c){
