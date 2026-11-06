@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Посещаемость</title>
 <meta name="theme-color" content="#2563eb">
@@ -15,7 +15,7 @@
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111214;--card:#1c1d20;--tx:#f2f2f3;--mut:#9ca3af;--ln:#2e3035;--ok:#4ade80;--ab:#fbbf24;--ac:#60a5fa}}
 :root[data-theme="dark"]{--bg:#111214;--card:#1c1d20;--tx:#f2f2f3;--mut:#9ca3af;--ln:#2e3035;--ok:#4ade80;--ab:#fbbf24;--ac:#60a5fa}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0}
+html,body{margin:0;touch-action:manipulation}
 body{background:var(--bg);color:var(--tx);font:16px/1.4 -apple-system,system-ui,"Segoe UI",Roboto,sans-serif;padding:12px;max-width:640px;margin:0 auto}
 .bar{display:flex;gap:8px;margin-bottom:10px}
 select,input{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:10px;min-width:0}
@@ -29,10 +29,12 @@ th{text-align:left;font-size:13px;color:var(--mut);padding:10px 12px;border-bott
 td{padding:0;border-bottom:1px solid var(--ln)}
 tr:last-child td{border-bottom:0}
 td.n{padding:12px}
-td.s{width:46%;text-align:center;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation;font-weight:600}
-td.s.p{color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,transparent)}
-td.s.a{color:var(--ab);background:color-mix(in srgb,var(--ab) 16%,transparent)}
-td.x{width:74px;text-align:center;color:var(--mut);cursor:pointer;touch-action:manipulation}td.x.c{color:#dc2626;font-weight:600;font-size:13px}
+td.s{width:108px;padding:8px 14px 8px 40px;text-align:left;vertical-align:middle;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+td.s .mk{display:inline-grid;place-items:center;width:48px;height:36px;border-radius:9px;border:1px solid var(--ln);font-weight:700;font-size:18px;line-height:1;text-align:center}
+td.s.p .mk{color:#fff;background:var(--ok);border-color:transparent}
+td.s.a .mk{color:#fff;background:var(--ab);border-color:transparent}
+th.m{width:108px;text-align:left;padding:10px 14px 10px 40px}
+td.x{width:74px;padding:0;text-align:center;color:var(--mut);cursor:pointer;touch-action:manipulation}td.x.c{color:#dc2626;font-weight:600;font-size:13px}
 .add{display:flex;gap:8px;margin-top:10px}.add input{flex:1}
 .hint{font-size:13px;color:var(--mut);margin:12px 2px}
 .empty{padding:18px;text-align:center;color:var(--mut)}
@@ -59,7 +61,7 @@ details .add{margin-top:8px}
 </style>
 </head>
 <body>
-<div class="top"><div class="brand"><div class="ttl" id="ttl">Посещаемость</div><div class="found" id="found"></div></div><button type="button" class="side"><div id="off"></div><div class="ver">версия 25</div></button></div>
+<div class="top"><div class="brand"><div class="ttl" id="ttl">Посещаемость</div><div class="found" id="found"></div></div><button type="button" class="side"><div id="off"></div><div class="ver">версия 31</div></button></div>
 <div class="bar">
   <select id="cls"></select>
   <input type="date" id="date">
@@ -67,11 +69,11 @@ details .add{margin-top:8px}
 <div class="ph" id="ph" hidden></div>
 <div class="sum" id="sum"></div>
 <table>
-  <thead><tr><th>Ученик</th><th style="text-align:center">Отметка</th><th></th></tr></thead>
+  <thead><tr><th>Ученик</th><th class="m">Отметка</th><th></th></tr></thead>
   <tbody id="rows"></tbody>
 </table>
 <div class="add"><input id="newst" placeholder="Новый ученик" autocomplete="off"><button id="addst">Добавить</button></div>
-<div class="hint">Одно нажатие — приехал(а). Двойное — оповестили об отсутствии. Нажатие на отмеченного — сброс. Выберите дату, чтобы посмотреть отметки за этот день.</div>
+<div class="hint">Нажатие ставит +. Ещё раз — н. Нажатие на н убирает отметку. Двойное нажатие сразу ставит н. Выберите дату, чтобы посмотреть отметки за этот день.</div>
 <details>
   <summary>Классы</summary>
   <div id="clslist"></div>
@@ -108,7 +110,7 @@ function draw(){
   var list=S.classes[cur]||[],m=S.marks[mk()]||{},p=0,a=0;
   $("rows").innerHTML=list.length?list.map(function(n,i){
     var v=m[n];if(v==1)p++;if(v==2)a++;
-    return '<tr><td class="n">'+esc(n)+'</td><td class="s '+(v==1?'p':v==2?'a':'')+'" data-i="'+i+'">'+(v==1?'✓ приехал(а)':v==2?'● оповестили':'')+'</td><td class="x'+(pend===String(i)?' c':'')+'" data-d="'+i+'">'+(pend===String(i)?'Удалить?':'✕')+'</td></tr>';
+    return '<tr><td class="n">'+esc(n)+'</td><td class="s '+(v==1?'p':v==2?'a':'')+'" data-i="'+i+'"><span class="mk">'+(v==1?'+':v==2?'н':'')+'</span></td><td class="x'+(pend===String(i)?' c':'')+'" data-d="'+i+'">'+(pend===String(i)?'Удалить?':'✕')+'</td></tr>';
   }).join(""):'<tr><td class="empty" colspan="3">Добавьте учеников ниже</td></tr>';
   $("sum").innerHTML='<span>Приехали: <b>'+p+'</b></span><span>Оповестили: <b>'+a+'</b></span><span>Нет отметки: <b>'+(list.length-p-a)+'</b></span>';
 }
@@ -118,17 +120,18 @@ function setMark(name,v){
   save();draw();
 }
 var timer=null,tapI=null,pend=null;
+document.addEventListener("dblclick",function(e){e.preventDefault()});
 $("rows").addEventListener("click",function(e){
-  var d=e.target.getAttribute("data-d");
-  if(d!==null){if(pend===d){S.classes[cur].splice(+d,1);pend=null;save();draw()}else{pend=d;draw();setTimeout(function(){if(pend===d){pend=null;draw()}},3000)}return}pend=null;
-  var i=e.target.getAttribute("data-i");if(i===null)return;
+  var del=e.target.closest("[data-d]");
+  if(del){var d=del.getAttribute("data-d");if(pend===d){S.classes[cur].splice(+d,1);pend=null;save();draw()}else{pend=d;draw();setTimeout(function(){if(pend===d){pend=null;draw()}},3000)}return}pend=null;
+  var cell=e.target.closest("[data-i]");if(!cell)return;var i=cell.getAttribute("data-i");
   var name=S.classes[cur][+i];
   if(timer&&tapI===i){clearTimeout(timer);timer=null;setMark(name,2);return}
   if(timer){clearTimeout(timer);timer=null}
   tapI=i;
   timer=setTimeout(function(){
-    timer=null;var m=S.marks[mk()]||{};
-    setMark(name,m[name]?0:1);
+    timer=null;var m=S.marks[mk()]||{},v=m[name]||0;
+    setMark(name,v==1?2:v==2?0:1);
   },260);
 });
 $("cls").onchange=function(){cur=this.value;S.last=cur;save();draw()};
@@ -204,7 +207,7 @@ var LOVE={
   secret:"Ты делаешь очень важное дело, и это не остаётся незамеченным 💛",
   codes:{"секрет":"Ты замечательная 💛"},
   dates:{},
-  fri:["Пятница! Неделя была длинной, а ты её выдержала 🎉","Ещё один тяжёлый кусок позади. Ты справилась 💪","Пятница. Отдых сегодня точно заслужен ☕️"],
+  fri:["Пятница! Неделя была длинной, а ты её выдержала 🎉","Ещё один тяжёлый день позади. Ты справилась 💪","Пятница. Отдых сегодня точно заслужен ☕️"],
   eve:["Рабочий день закончился. Можно отпустить этот день 🌙","На сегодня достаточно. Ты сделала много 💛","Хорошего вечера. Пусть он будет только твоим ✨"],
   day:["Ты сегодня уже сделала больше, чем замечаешь сама 💛","Столько дел, и ты всё равно замечаешь каждого 🌷","Даже обычный день с тобой становится теплее ☀️","Рядом с тобой сразу спокойнее ☺️","Тобой легко восхищаться, даже после долгого дня ✨","Ты умеешь делать обычное особенным\u00A0✨","Такая работа выматывает. Ты с ней справляешься прекрасно 💪","Можно выдохнуть. Ты и так уже молодец 🌿","От тебя хочется улыбаться. Само как-то получается 😊","О тебе думают с теплом. Прямо сейчас 💛","Иногда секрет прячется среди новых учеников 🤫"],
   nag:["Всё уже готово. Не нажимай ещё раз","Серьёзно: ещё одно нажатие ни к чему","Лучше остановись и больше не нажимай","Последний раз прошу — не нажимай"],
